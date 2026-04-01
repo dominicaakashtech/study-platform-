@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - LEARN HUB{% endblock %}
+
+{% block content %}
+<div class="container mb-5 mt-4">
+    <div class="row justify-content-center px-2">
+        <div class="col-md-7 col-lg-5">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h3><i class="bi bi-person-circle"></i> Login to LEARN HUB</h3>
+                </div>
+                <div class="card-body">
+
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        Invalid username or password. Please try again.
+                    </div>
+                    {% endif %}
+
+                    {% if banned %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-slash-circle-fill me-1"></i>
+                        <strong>Account suspended.</strong><br>
+                        <small>{{ ban_reason }}</small>
+                    </div>
+                    {% endif %}
+
+                    {% if inactive %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Your account is inactive. Please contact support.
+                    </div>
+                    {% endif %}
+
+                    {% if messages %}
+                    {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" id="id_username"
+                                   required autofocus autocomplete="username">
+                        </div>
+                        <div class="mb-1">
+                            <label for="id_password" class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" id="id_password"
+                                   required autocomplete="current-password">
+                        </div>
+                        <div class="text-end mb-4">
+                            <a href="{% url 'forgot_password' %}" class="small text-muted">
+                                <i class="bi bi-key"></i> Forgot password?
+                            </a>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </button>
+                            <a href="{% url 'register' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-person-plus"></i> Don't have an account? Register
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <small class="text-muted">
+                        New here? <a href="{% url 'register' %}">Create a free account</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

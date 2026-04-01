@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block title %}Verify OTP – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+{# Critical styles inlined — no extra round-trip #}
+<style>
+.otp-card{border-radius:20px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.18)}
+.otp-header{background:linear-gradient(135deg,#010101 0%,#3b145b 100%);padding:2.5rem 2rem 2rem;text-align:center;color:#fff}
+.otp-header .lock-icon{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2.5rem;border:3px solid rgba(255,255,255,.25)}
+.otp-body{padding:2rem;background:#fff}
+.otp-input-wrap{display:flex;gap:clamp(5px, 2vw, 12px);justify-content:center;margin:1.5rem 0}
+.otp-digit{width:clamp(40px, 12vw, 54px);height:clamp(50px, 15vw, 64px);font-size:clamp(1.2rem, 5vw, 1.8rem);font-weight:700;text-align:center;border:2px solid #ddd;border-radius:12px;outline:none;transition:border-color .2s,box-shadow .2s;padding:0}
+.otp-digit:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.otp-digit.filled{border-color:#3b145b;background:#f5f0ff}
+.timer-bar{height:4px;background:#e0e0e0;border-radius:4px;overflow:hidden;margin-bottom:1rem}
+.timer-fill{height:100%;background:linear-gradient(90deg,#3b145b,#e10707);transition:width 1s linear}
+.resend-btn{background:none;border:none;color:#7c3aed;font-weight:600;cursor:pointer}
+.resend-btn:disabled{color:#aaa;cursor:not-allowed}
+.email-masked{background:#f8f0ff;border-radius:8px;padding:6px 14px;color:#3b145b;font-weight:600;word-break:break-all;max-width:100%}
+
+@media (max-width: 480px) {
+    .otp-header{padding:1.8rem 1rem 1.2rem}
+    .otp-body{padding:1.5rem 1rem}
+    .otp-header .lock-icon{width:65px;height:65px;font-size:2rem;margin-bottom:0.75rem}
+    .otp-header h3{font-size:1.35rem}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-5 mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="otp-card">
+
+                <div class="otp-header">
+                    <div class="lock-icon">
+                        {% if purpose == 'login' %}
+                        <i class="bi bi-person-lock"></i>
+                        {% elif purpose == 'password_reset' %}
+                        <i class="bi bi-key-fill"></i>
+                        {% else %}
+                        <i class="bi bi-shield-lock-fill"></i>
+                        {% endif %}
+                    </div>
+                    <h3 class="mb-1">
+                        {% if purpose == 'login' %}Login Verification
+                        {% elif purpose == 'password_reset' %}Reset Password
+                        {% else %}Verify Your Email{% endif %}
+                    </h3>
+                    <p class="mb-0 small" style="opacity:.85">
+                        We sent a 6-digit code to<br>
+                        <span class="email-masked mt-1 d-inline-block">{{ email }}</span>
+                    </p>
+                </div>
+
+                <div class="otp-body">
+                    {% if messages %}
+                    {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    {# Timer bar rendered immediately; JS starts countdown after DOMContentLoaded #}
+                    <div class="timer-bar">
+                        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+                    </div>
+                    <p class="text-center text-muted small mb-0">
+                        Code expires in <span id="timerText" class="fw-bold text-danger">10:00</span>
+                    </p>
+
+                    <form method="post" id="otpForm" autocomplete="off">
+                        {% csrf_token %}
+                        <div class="otp-input-wrap" id="digitWrap">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="0" aria-label="Digit 1">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="1" aria-label="Digit 2">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="2" aria-label="Digit 3">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="3" aria-label="Digit 4">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="4" aria-label="Digit 5">
+                            <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" data-idx="5" aria-label="Digit 6">
+                        </div>
+                        {# Hidden real input sent to server #}
+                        <input type="hidden" name="otp_code" id="otpHidden">
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary btn-lg" id="verifyBtn">
+                                <i class="bi bi-shield-check"></i>
+                                {% if purpose == 'password_reset' %}Verify & Continue{% else %}Verify & Login{% endif %}
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-3">
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">Didn't receive the code?</p>
+                        <button class="resend-btn" id="resendBtn" onclick="resendOTP()" disabled>
+                            <i class="bi bi-arrow-clockwise"></i> Resend OTP <span id="resendTimer">(30s)</span>
+                        </button>
+                    </div>
+                    <div class="text-center mt-3">
+                        {% if purpose == 'login' %}
+                        <a href="{% url 'login' %}" class="text-muted small">
+                            <i class="bi bi-arrow-left"></i> Back to Login
+                        </a>
+                        {% elif purpose == 'password_reset' %}
+                        <a href="{% url 'forgot_password' %}" class="text-muted small">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                        {% else %}
+                        <a href="{% url 'register' %}" class="text-muted small">
+                            <i class="bi bi-arrow-left"></i> Back to Register
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# Deferred — runs after page paint, no render-blocking #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Digit inputs ─────────────────────────────────────────────────────────
+    const digits  = document.querySelectorAll('.otp-digit');
+    const hidden  = document.getElementById('otpHidden');
+    const otpForm = document.getElementById('otpForm');
+
+    function syncHidden() {
+        hidden.value = [...digits].map(d => d.value).join('');
+    }
+
+    digits.forEach(function (inp, i) {
+        inp.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(-1);
+            this.classList.toggle('filled', !!this.value);
+            if (this.value && i < digits.length - 1) digits[i + 1].focus();
+            syncHidden();
+            if ([...digits].every(function(d){ return d.value; })) {
+                setTimeout(function(){ otpForm.submit(); }, 300);
+            }
+        });
+        inp.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && !this.value && i > 0) {
+                digits[i - 1].value = '';
+                digits[i - 1].classList.remove('filled');
+                digits[i - 1].focus();
+                syncHidden();
+            }
+        });
+        inp.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+            [...pasted.slice(0, 6)].forEach(function (ch, j) {
+                if (digits[j]) { digits[j].value = ch; digits[j].classList.add('filled'); }
+            });
+            syncHidden();
+            const nextIdx = Math.min(pasted.length, 5);
+            if (digits[nextIdx]) digits[nextIdx].focus();
+            // auto-submit on full paste
+            if ([...digits].every(function(d){ return d.value; })) {
+                setTimeout(function(){ otpForm.submit(); }, 300);
+            }
+        });
+    });
+    digits[0].focus();
+
+    // ── Expiry countdown (10 min) ─────────────────────────────────────────────
+    let total       = 600;
+    const timerText = document.getElementById('timerText');
+    const timerFill = document.getElementById('timerFill');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    var expiryInterval = setInterval(function () {
+        total--;
+        var m = String(Math.floor(total / 60)).padStart(2, '0');
+        var s = String(total % 60).padStart(2, '0');
+        timerText.textContent = m + ':' + s;
+        timerFill.style.width = (total / 600 * 100) + '%';
+        if (total <= 60) timerText.style.color = '#e10707';
+        if (total <= 0) {
+            clearInterval(expiryInterval);
+            timerText.textContent = 'Expired';
+            timerFill.style.width = '0%';
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i class="bi bi-clock-history"></i> Code Expired – Request New OTP';
+        }
+    }, 1000);
+
+    // ── Resend countdown (30 s) ────────────────────────────────────────────────
+    let resendCd     = 30;
+    const resendBtn  = document.getElementById('resendBtn');
+    const resendSpan = document.getElementById('resendTimer');
+
+    var resendInterval = setInterval(function () {
+        resendCd--;
+        resendSpan.textContent = '(' + resendCd + 's)';
+        if (resendCd <= 0) {
+            clearInterval(resendInterval);
+            resendBtn.disabled = false;
+            resendSpan.textContent = '';
+        }
+    }, 1000);
+
+    // Attach to global scope so inline onclick works
+    window.resendOTP = function () {
+        resendBtn.disabled = true;
+        resendSpan.textContent = '…';
+        fetch("{% url 'resend_otp' %}", {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(d) {
+            var cls = d.success ? 'success' : 'danger';
+            var msg = d.success ? d.message : (d.error || 'Error sending OTP.');
+            var el  = document.createElement('div');
+            el.className = 'alert alert-' + cls + ' alert-dismissible fade show';
+            el.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.querySelector('.otp-body').prepend(el);
+            if (d.success) {
+                total = 600;  // reset expiry bar
+                let newCd = 60;
+                resendSpan.textContent = '(' + newCd + 's)';
+                var ni = setInterval(function () {
+                    newCd--;
+                    resendSpan.textContent = '(' + newCd + 's)';
+                    if (newCd <= 0) { clearInterval(ni); resendBtn.disabled = false; resendSpan.textContent = ''; }
+                }, 1000);
+            } else {
+                resendBtn.disabled = false;
+                resendSpan.textContent = '';
+            }
+        })
+        .catch(function() { resendBtn.disabled = false; resendSpan.textContent = ''; });
+    };
+
+}); // end DOMContentLoaded
+</script>
+{% endblock %}

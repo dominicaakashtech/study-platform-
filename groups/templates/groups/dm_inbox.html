@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Messages – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+.inbox-hero {
+    background: linear-gradient(135deg,#010101 0%,#3b145b 100%);
+    color:#fff; padding:2rem 0; text-align:center;
+}
+.conv-item {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 20px; border-bottom:1px solid #f0f0f0;
+    text-decoration:none; color:inherit;
+    transition:background .15s;
+}
+.conv-item:hover { background:#f8f0ff; color:inherit; }
+.conv-item.unread { background:#fdf5ff; }
+.conv-avatar {
+    width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#3b145b,#7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:1.1rem;
+    overflow:hidden;
+}
+.conv-avatar img { width:100%; height:100%; object-fit:cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inbox-hero">
+    <h3><i class="bi bi-chat-dots-fill"></i> Direct Messages</h3>
+    <p class="opacity-75 mb-0">Private conversations with group members</p>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card overflow-hidden">
+                {% for c in conversations %}
+                <a href="{% url 'dm_conversation' c.user.username %}"
+                   class="conv-item {% if c.unread %}unread{% endif %}">
+                    <div class="conv-avatar">
+                        {% if c.profile.avatar %}
+                        <img src="{{ c.profile.avatar.url }}" alt="">
+                        {% else %}
+                        {{ c.user.username|slice:":2"|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold {% if c.unread %}text-dark{% else %}text-muted{% endif %}">
+                                {{ c.user.get_full_name|default:c.user.username }}
+                            </span>
+                            <small class="text-muted flex-shrink-0 ms-2">
+                                {{ c.last_msg.sent_at|timesince }} ago
+                            </small>
+                        </div>
+                        <div class="text-muted small text-truncate">
+                            {% if c.last_msg.sender == request.user %}
+                            <span class="text-primary">You:</span>
+                            {% endif %}
+                            {{ c.last_msg.content|truncatechars:55 }}
+                        </div>
+                    </div>
+                    {% if c.unread %}
+                    <span class="badge rounded-pill flex-shrink-0"
+                          style="background:linear-gradient(135deg,#3b145b,#e10707);">
+                        {{ c.unread }}
+                    </span>
+                    {% endif %}
+                </a>
+                {% empty %}
+                <div class="text-center py-5 px-3">
+                    <i class="bi bi-chat-square display-3 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No conversations yet</h5>
+                    <p class="text-muted">Visit a group member's profile and click <strong>Send Message</strong> to start a conversation.</p>
+                    <a href="{% url 'browse_groups' %}" class="btn btn-primary">
+                        <i class="bi bi-grid-3x3-gap"></i> Browse Groups
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

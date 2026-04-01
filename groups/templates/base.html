@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LEARN HUB{% endblock %}</title>
+
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════════ */
+:root {
+    --brand-dark:   #010101;
+    --brand-purple: #3b145b;
+    --brand-mid:    #1e0239;
+    --brand-red:    #e10707;
+    --brand-violet: #7c3aed;
+}
+
+/* ═══════════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════════ */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f5f9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 80px;
+}
+
+/* ═══════════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════════ */
+.navbar {
+    background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-purple) 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+.navbar-brand { font-weight: 700; font-size: 1.5rem; }
+
+.nav-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,.5);
+    vertical-align: middle;
+}
+.nav-avatar-placeholder {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg,#7c3aed,#e10707);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-size: .7rem; font-weight: 700;
+    border: 2px solid rgba(255,255,255,.5);
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   HERO CAROUSEL
+═══════════════════════════════════════════════ */
+.hero-carousel .carousel-item {
+    height: 520px;
+    background-size: cover;
+    background-position: center;
+}
+.hero-carousel .carousel-item-1 { background: linear-gradient(135deg,#0d0d2b 0%,#1a0533 40%,#370d61 100%); }
+.hero-carousel .carousel-item-2 { background: linear-gradient(135deg,#0a1628 0%,#0d3b6e 50%,#1565c0 100%); }
+.hero-carousel .carousel-item-3 { background: linear-gradient(135deg,#0d1f0a 0%,#145214 50%,#2e7d32 100%); }
+.hero-carousel .carousel-item-4 { background: linear-gradient(135deg,#1a0000 0%,#5c0a0a 50%,#b71c1c 100%); }
+
+.carousel-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; color: #fff; padding: 2rem;
+}
+.carousel-overlay h1   { font-size: 3rem; font-weight: 800; text-shadow: 0 3px 10px rgba(0,0,0,.5); }
+.carousel-overlay p    { font-size: 1.2rem; opacity: .92; margin-bottom: 1.8rem; }
+.carousel-overlay .slide-icon { font-size: 5rem; margin-bottom: 1rem; opacity: .88; }
+.carousel-control-prev-icon,
+.carousel-control-next-icon { filter: invert(0) drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.carousel-indicators [data-bs-target] {
+    background-color: rgba(255,255,255,.7); border-radius: 50%; width:10px; height:10px;
+}
+.carousel-indicators .active { background-color: #fff; }
+
+/* ═══════════════════════════════════════════════
+   GROUP CARD
+═══════════════════════════════════════════════ */
+.group-card {
+    border: none; border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    transition: transform .3s ease, box-shadow .3s ease;
+    overflow: hidden; height: 100%; background: #fff;
+}
+.group-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.15);
+}
+.group-card-cover { width: 100%; height: 170px; object-fit: cover; display: block; }
+.group-card-cover-fallback {
+    height: 170px; display: flex; align-items: center;
+    justify-content: center; position: relative; overflow: hidden;
+}
+.group-card-cover-fallback::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0,0,0,.18);
+}
+.group-card-cover-fallback .cover-icon {
+    font-size: 3.8rem; color: rgba(255,255,255,.88);
+    position: relative; z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
+}
+.group-card-cover-fallback .cover-subject-label {
+    position: absolute; bottom: 10px; left: 14px; z-index: 1;
+    color: #fff; font-size: .7rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    background: rgba(0,0,0,.35); border-radius: 20px; padding: 2px 10px;
+}
+.cover-math    { background: linear-gradient(135deg,#1a1a2e,#0f3460); }
+.cover-science { background: linear-gradient(135deg,#0d4a47,#1aab8a); }
+.cover-english { background: linear-gradient(135deg,#3a0a2e,#a8175e); }
+.cover-history { background: linear-gradient(135deg,#3b1a00,#c85000); }
+.cover-cs      { background: linear-gradient(135deg,#001133,#003399); }
+.cover-arts    { background: linear-gradient(135deg,#2a0a3e,#9c27b0); }
+.cover-default { background: linear-gradient(135deg,var(--brand-dark),var(--brand-purple)); }
+
+.group-card .card-body  { padding: 1.1rem 1.3rem .6rem; }
+.group-card .card-footer {
+    background: transparent; border-top: 1px solid rgba(0,0,0,.06);
+    padding: .7rem 1.3rem 1.1rem;
+}
+
+/* ═══════════════════════════════════════════════
+   GENERIC CARD
+═══════════════════════════════════════════════ */
+.card {
+    border: none; border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+    transition: transform .3s ease, box-shadow .3s ease;
+    height: 100%;
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,.15); }
+.card-header {
+    background: linear-gradient(135deg,#020f47 0%,#1e0239 100%);
+    color: white; border-radius: 15px 15px 0 0 !important;
+    font-weight: 600; padding: 1rem 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════ */
+.btn-primary {
+    background: linear-gradient(135deg,#e10707 0%,#c17e7e 100%);
+    border: none; border-radius: 25px;
+    padding: 10px 30px; font-weight: 600;
+    transition: all .3s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(43,55,109,.4);
+}
+
+/* ═══════════════════════════════════════════════
+   BADGE
+═══════════════════════════════════════════════ */
+.badge { border-radius: 20px; padding: 5px 15px; font-weight: 500; }
+
+/* ═══════════════════════════════════════════════
+   CHAT
+═══════════════════════════════════════════════ */
+.chat-container {
+    height: 400px; overflow-y: auto;
+    background-color: #f8f9fa; border-radius: 10px; padding: 15px;
+}
+.message-bubble {
+    background: linear-gradient(135deg,#ffffff,#f8f8f8);
+    border-radius: 15px; padding: 10px 15px;
+    margin-bottom: 10px; margin-right: auto;
+    max-width: 70%; box-shadow: 0 2px 5px rgba(0,0,0,.05);
+}
+.message-bubble.own-message {
+    background: linear-gradient(135deg,#ffffff,#0bb0ed);
+    color: #000; margin-left: auto; margin-right: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   FLOATING DM BUTTON
+═══════════════════════════════════════════════ */
+#floatingChatBtn {
+    position: fixed; bottom: 28px; right: 28px;
+    width: 62px; height: 62px; border-radius: 50%;
+    background: linear-gradient(135deg,#3b145b,#e10707);
+    color: #fff; border: none;
+    box-shadow: 0 6px 22px rgba(0,0,0,.32);
+    font-size: 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 1050;
+    transition: transform .25s ease, box-shadow .25s ease;
+    text-decoration: none;
+}
+#floatingChatBtn:hover {
+    transform: scale(1.12) rotate(-5deg);
+    box-shadow: 0 10px 28px rgba(0,0,0,.4); color: #fff;
+}
+#floatingChatBtn .chat-badge {
+    position: absolute; top: 4px; right: 4px;
+    min-width: 18px; height: 18px;
+    background: #0bb0ed; border-radius: 50%;
+    font-size: .6rem; font-weight: 700;
+    display: none; align-items: center; justify-content: center;
+    border: 2px solid #fff; padding: 0 3px;
+}
+
+/* ═══════════════════════════════════════════════
+   MISC UTILITIES
+═══════════════════════════════════════════════ */
+.resource-item { border-left: 4px solid #667eea; padding-left: 15px; margin-bottom: 15px; }
+.calendar-event {
+    background-color: #e7f3ff; border-left: 4px solid #0066cc;
+    padding: 15px; border-radius: 8px; margin-bottom: 15px;
+}
+.search-box { border-radius: 25px; padding: 10px 20px; }
+.member-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg,#19191a,#764ba2);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600;
+}
+.stats-box {
+    background: linear-gradient(135deg,#161926,#30035e);
+    color: white; border-radius: 15px; padding: 20px; text-align: center;
+}
+.stats-box h3 { font-size: 2.5rem; font-weight: 700; margin: 0; }
+
+/* ═══════════════════════════════════════════════
+   DROPDOWN MENU
+═══════════════════════════════════════════════ */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    border-radius: 14px;
+    overflow: hidden;
+    padding: .4rem 0;
+    min-width: 210px;
+}
+.dropdown-item {
+    padding: .55rem 1.2rem;
+    font-size: .9rem;
+    transition: background .15s;
+}
+.dropdown-item:hover { background: #f5f0ff; color: #3b145b; }
+.dropdown-item i { width: 20px; text-align: center; margin-right: 6px; }
+.dropdown-divider { margin: .3rem 0; }
+
+.dm-pill {
+    font-size: .65rem; padding: 2px 7px;
+    border-radius: 20px;
+    background: linear-gradient(135deg,#e10707,#3b145b);
+    color: #fff; font-weight: 700; vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════
+   NAVBAR SEARCH BAR
+═══════════════════════════════════════════════ */
+.nav-search-form { flex: 0 1 280px; }
+.nav-search-input {
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.25);
+    color: #fff;
+    border-radius: 22px 0 0 22px !important;
+    font-size: .85rem;
+    padding: 6px 14px;
+    transition: background .2s, border-color .2s;
+}
+.nav-search-input::placeholder { color: rgba(255,255,255,.55); }
+.nav-search-input:focus {
+    background: rgba(255,255,255,.22);
+    border-color: rgba(255,255,255,.6);
+    color: #fff;
+    box-shadow: none;
+    outline: none;
+}
+.nav-search-btn {
+    background: rgba(255,255,255,.18);
+    border: 1.5px solid rgba(255,255,255,.25);
+    border-left: none;
+    border-radius: 0 22px 22px 0 !important;
+    color: #fff;
+    padding: 6px 14px;
+    transition: background .2s;
+}
+.nav-search-btn:hover { background: rgba(255,255,255,.32); color: #fff; }
+@media (max-width: 991.98px) {
+    .nav-search-form { flex: 1 1 100%; max-width: 100%; margin: .5rem 0; }
+    .nav-search-input { border-radius: 22px 0 0 22px !important; }
+    .nav-search-btn   { border-radius: 0 22px 22px 0 !important; }
+}
+</style>
+
+{% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════ -->
+{% if not hide_nav_footer %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="bi bi-book"></i> LEARN HUB
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <!-- Left links -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="bi bi-house-fill"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'browse_groups' %}">
+                        <i class="bi bi-grid-3x3-gap-fill"></i> Browse Groups
+                    </a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create_group' %}">
+                        <i class="bi bi-plus-circle-fill"></i> Create Group
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- Search bar -->
+            <form class="nav-search-form mx-lg-3 my-2 my-lg-0"
+                  action="{% url 'browse_groups' %}" method="get">
+                <div class="input-group">
+                    <input type="text" name="q"
+                           class="form-control nav-search-input"
+                           placeholder="Search groups…"
+                           value="{{ request.GET.q|default:'' }}"
+                           autocomplete="off">
+                    <button class="btn nav-search-btn" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Right links -->
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+
+                {% if user.is_authenticated %}
+                <!-- Profile dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                       href="#"
+                       id="profileDropdown"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+
+                        {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}"
+                                 class="nav-avatar" alt="{{ user.username }}">
+                        {% else %}
+                            <span class="nav-avatar-placeholder">
+                                {% if user.first_name and user.last_name %}
+                                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                                {% else %}
+                                    {{ user.username|slice:":2"|upper }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+
+                        <span class="d-none d-lg-inline text-white">{{ user.username }}</span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+
+                        <!-- Mini profile header -->
+                        <li>
+                            <div class="px-3 py-2 border-bottom"
+                                 style="background:linear-gradient(135deg,#f5f0ff,#fff);">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if user.profile.avatar %}
+                                        <img src="{{ user.profile.avatar.url }}"
+                                             style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt="">
+                                    {% else %}
+                                        <div style="width:36px;height:36px;border-radius:50%;
+                                                    background:linear-gradient(135deg,#3b145b,#7c3aed);
+                                                    display:flex;align-items:center;justify-content:center;
+                                                    color:#fff;font-size:.75rem;font-weight:700;flex-shrink:0;">
+                                            {% if user.first_name and user.last_name %}
+                                                {{ user.first_name.0 }}{{ user.last_name.0 }}
+                                            {% else %}
+                                                {{ user.username|slice:":2"|upper }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold" style="font-size:.85rem;color:#1e0239;line-height:1.2;">
+                                            {{ user.get_full_name|default:user.username }}
+                                        </div>
+                                        <div class="text-muted" style="font-size:.72rem;">
+                                            @{{ user.username }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="bi bi-person-fill text-primary"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center"
+                               href="{% url 'dm_inbox' %}">
+                                <span><i class="bi bi-chat-left-dots-fill text-info"></i> Messages</span>
+                                <span id="dropdownDmBadge" class="dm-pill" style="display:none;"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 text-success"></i> Dashboard
+                            </a>
+                        </li>
+
+                        {% if user.is_staff %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                                <i class="bi bi-shield-lock-fill text-danger"></i> Admin Panel
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <form action="{% url 'logout' %}" method="post" id="logoutForm" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                            <a class="dropdown-item text-danger" href="javascript:void(0)" 
+                               onclick="document.getElementById('logoutForm').submit();">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                {% else %}
+
+                <!-- Guest: Login + Register as visible pill buttons -->
+                <li class="nav-item">
+                    <a href="{% url 'login' %}"
+                       class="btn btn-outline-light btn-sm px-3 py-1 fw-semibold me-1"
+                       style="border-radius:20px;">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'register' %}"
+                       class="btn btn-light btn-sm px-3 py-1 fw-bold"
+                       style="border-radius:20px;color:#3b145b;">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                </li>
+
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════ -->
+<main class="flex-grow-1">{% block content %}{% endblock %}</main>
+
+<!-- ═══════════════════════════════════════════════
+     FLOATING DM BUTTON — hidden on home page
+═══════════════════════════════════════════════ -->
+{% if user.is_authenticated %}
+{% with current_url=request.resolver_match.url_name %}
+{% if current_url != 'home' and current_url != 'video_meet' %}
+{% endif %}
+{% endwith %}
+{% endif %}
+
+{% if not hide_nav_footer %}
+{% with current_url=request.resolver_match.url_name %}
+{% if current_url != 'video_meet' %}
+<footer class="footer mt-auto text-light">
+    <div class="footer-top py-5"
+         style="background:linear-gradient(135deg,#010101 0%,#3b145b 100%);">
+        <div class="container">
+            <div class="row gy-4">
+
+                <div class="col-md-4">
+                    <h4 class="fw-bold"><i class="bi bi-book"></i> LEARN HUB</h4>
+                    <p class="small mt-3 opacity-75">
+                        A collaborative platform where students connect, share knowledge,
+                        and grow through learning communities.
+                    </p>
+                </div>
+
+                <div class="col-md-4">
+                    <h5 class="fw-semibold mb-3">Quick Links</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-1">
+                            <a href="{% url 'home' %}" class="text-light text-decoration-none">
+                                <i class="bi bi-house"></i> Home
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="{% url 'browse_groups' %}" class="text-light text-decoration-none">
+                                <i class="bi bi-grid-3x3-gap"></i> Browse Groups
+                            </a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="mb-1">
+                            <a href="{% url 'create_group' %}" class="text-light text-decoration-none">
+                                <i class="bi bi-plus-circle"></i> Create Group
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="{% url 'profile' %}" class="text-light text-decoration-none">
+                                <i class="bi bi-person-fill"></i> My Profile
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="{% url 'dm_inbox' %}" class="text-light text-decoration-none">
+                                <i class="bi bi-chat-dots"></i> Messages
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5 class="fw-semibold mb-3">Connect</h5>
+                    <p class="small mb-1">
+                        <i class="bi bi-envelope-fill me-2"></i>darknetworkak@gmail.com
+                    </p>
+                    <p class="small mb-3">
+                        <i class="bi bi-telephone-fill me-2"></i>+91 6384725014
+                    </p>
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+                           style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-twitter-x"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+                           style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+                           style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light rounded-circle"
+                           style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom py-3 text-center small" style="background:#111;">
+        © 2025 LEARN HUB &nbsp;·&nbsp; Built for learners, by learners
+    </div>
+</footer>
+{% endif %}
+{% endwith %}
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS — jQuery and Bootstrap bundle
+     - jQuery added for chat and media picker
+     - Bootstrap for UI components
+═══════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+{% if user.is_authenticated and not hide_nav_footer %}
+<script>
+(function () {
+    var POLL = 20000;
+
+    function updateBadges(count) {
+        ['navDmBadge', 'dropdownDmBadge', 'dmFloatBadge'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (count > 0) {
+                el.textContent = count > 99 ? '99+' : count;
+                el.style.display = id === 'dmFloatBadge' ? 'flex' : 'inline-block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    function fetchCount() {
+        fetch("{% url 'dm_unread_count' %}", {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) { updateBadges(d.count || 0); })
+        .catch(function () {});
+    }
+
+    fetchCount();
+    setInterval(fetchCount, POLL);
+})();
+</script>
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

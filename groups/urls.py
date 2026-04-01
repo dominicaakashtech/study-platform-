@@ -1,0 +1,38 @@
+from django.urls import path
+from django.contrib.auth import views as auth_views
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('register/', views.register, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('browse/', views.browse_groups, name='browse_groups'),
+    path('create/', views.create_group, name='create_group'),
+    path('group/<int:pk>/', views.group_detail, name='group_detail'),
+    path('group/<int:pk>/join/', views.join_group, name='join_group'),
+    path('group/<int:pk>/leave/', views.leave_group, name='leave_group'),
+    path('group/<int:pk>/resource/add/', views.add_resource, name='add_resource'),
+    path('group/<int:pk>/message/send/', views.send_message, name='send_message'),
+    path('group/<int:pk>/messages/', views.get_messages, name='get_messages'),
+    path('group/<int:pk>/session/add/', views.add_session, name='add_session'),
+    path('profile/', views.profile_view, name='profile'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/<str:username>/', views.public_profile, name='public_profile'),
+    path('messages/', views.dm_inbox, name='dm_inbox'),
+    path('messages/<str:username>/', views.dm_conversation, name='dm_conversation'),
+    path('messages/<str:username>/send/', views.dm_send, name='dm_send'),
+    path('messages/unread-count/', views.dm_unread_count, name='dm_unread_count'),
+    path('messages/<str:username>/fetch/', views.dm_fetch_new, name='dm_fetch_new'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-dashboard/toggle-user/<int:user_id>/', views.admin_toggle_user, name='admin_toggle_user'),
+    path('admin-dashboard/delete-group/<int:group_id>/', views.admin_delete_group, name='admin_delete_group'),
+    path('admin-dashboard/delete-message/<int:msg_id>/', views.admin_delete_message, name='admin_delete_message'),
+    path('admin-dashboard/announcement/create/', views.admin_create_announcement, name='admin_create_announcement'),
+    path('admin-dashboard/announcement/<int:ann_id>/delete/', views.admin_delete_announcement, name='admin_delete_announcement'),
+]

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block title %}Create Study Group – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Left visual panel */
+.cg-visual {
+    background: linear-gradient(135deg,#010101 0%,#3b145b 100%);
+    border-radius: 16px 0 0 16px;
+    color: #fff;
+    padding: 2.5rem 1.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+.cg-visual::before {
+    content:'';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(circle at 25% 25%, rgba(155,60,255,.3) 0%, transparent 55%),
+        radial-gradient(circle at 75% 75%, rgba(80,0,180,.35) 0%, transparent 55%);
+}
+.cg-visual > * { position: relative; z-index: 1; }
+
+/* Image preview box */
+#previewBox {
+    width: 100%;
+    max-width: 220px;
+    height: 140px;
+    border-radius: 14px;
+    border: 2.5px dashed rgba(255,255,255,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.2rem;
+    overflow: hidden;
+    background: rgba(255,255,255,.08);
+    transition: border-color .3s;
+}
+#previewBox img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+#previewBox .preview-placeholder {
+    text-align: center;
+    color: rgba(255,255,255,.6);
+}
+#previewBox .preview-placeholder i { font-size: 2.5rem; display: block; margin-bottom: 6px; }
+#previewBox .preview-placeholder small { font-size: .75rem; }
+
+.cg-visual h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: .6rem; }
+.cg-visual p  { font-size: .88rem; opacity: .8; line-height: 1.7; }
+
+.feat-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 50px; padding: 5px 14px;
+    font-size: .76rem; font-weight: 500;
+    margin: 3px; backdrop-filter: blur(4px);
+}
+
+/* Right form panel */
+.cg-form {
+    background: #fff;
+    border-radius: 0 16px 16px 0;
+    padding: 2.5rem 2rem;
+}
+.cg-form .section-title {
+    font-size: 1.4rem; font-weight: 700; color: #1e0239; margin-bottom: 1.5rem;
+}
+.cg-form .form-label {
+    font-weight: 600; font-size: .875rem; color: #444; margin-bottom: 4px;
+}
+.cg-form .form-control:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+.cg-form .btn-primary {
+    background: linear-gradient(135deg,#3b145b 0%,#7c3aed 100%);
+    border: none;
+}
+.cg-form .btn-primary:hover {
+    background: linear-gradient(135deg,#2d0f47 0%,#6d28d9 100%);
+}
+
+/* File input styled */
+.file-upload-label {
+    display: flex; align-items: center; gap: 10px;
+    background: #f4f5f9; border: 2px dashed #c7b9d9;
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: border-color .2s, background .2s;
+    font-size: .9rem; color: #555;
+}
+.file-upload-label:hover { border-color: #7c3aed; background: #f0ebfa; }
+.file-upload-label i { font-size: 1.4rem; color: #7c3aed; }
+#id_cover_image { display: none; }
+
+.wrapper { border-radius: 16px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,.14); }
+
+@media (max-width: 767px) {
+    .cg-visual { border-radius: 16px 16px 0 0; }
+    .cg-form   { border-radius: 0 0 16px 16px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            <div class="wrapper">
+                <div class="row g-0">
+
+                    <!-- LEFT: Visual / preview panel -->
+                    <div class="col-md-4 cg-visual">
+
+                        <!-- Live preview of uploaded image -->
+                        <div id="previewBox">
+                            <div class="preview-placeholder">
+                                <i class="bi bi-image"></i>
+                                <small>Cover image<br>preview</small>
+                            </div>
+                        </div>
+
+                        <h2>Build Your Study Community</h2>
+                        <p>Create a space where learners come together to achieve more.</p>
+
+                        <div class="mt-3">
+                            <span class="feat-pill"><i class="bi bi-chat-dots-fill"></i> Group Chat</span>
+                            <span class="feat-pill"><i class="bi bi-file-earmark-text-fill"></i> Resources</span>
+                            <span class="feat-pill"><i class="bi bi-calendar-check-fill"></i> Sessions</span>
+                            <span class="feat-pill"><i class="bi bi-people-fill"></i> Up to 100 Members</span>
+                            <span class="feat-pill"><i class="bi bi-lock-fill"></i> Public or Private</span>
+                            <span class="feat-pill"><i class="bi bi-key-fill"></i> Password Protection</span>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Form -->
+                    <div class="col-md-8 cg-form">
+                        <h3 class="section-title">
+                            <i class="bi bi-plus-circle-fill me-2" style="color:#7c3aed;"></i>
+                            Create New Study Group
+                        </h3>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-card-heading"></i> Group Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                                    <i class="bi bi-tag"></i> Subject <span class="text-danger">*</span>
+                                </label>
+                                {{ form.subject }}
+                                <small class="form-text text-muted">e.g., Mathematics, Physics, Computer Science</small>
+                                {% if form.subject.errors %}
+                                <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    <i class="bi bi-text-paragraph"></i> Description <span class="text-danger">*</span>
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.max_members.id_for_label }}" class="form-label">
+                                    <i class="bi bi-people"></i> Maximum Members <span class="text-danger">*</span>
+                                </label>
+                                {{ form.max_members }}
+                                <small class="form-text text-muted">Minimum 1. Set to 0 for unlimited members.</small>
+                                {% if form.max_members.errors %}
+                                <div class="text-danger small mt-1">{{ form.max_members.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Cover Image Upload -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-image"></i> Cover Image
+                                    <span class="text-muted fw-normal">(optional)</span>
+                                </label>
+                                <label class="file-upload-label" for="id_cover_image">
+                                    <i class="bi bi-cloud-upload"></i>
+                                    <span id="fileLabel">Click to upload a cover image (JPG, PNG, GIF…)</span>
+                                </label>
+                                {{ form.cover_image }}
+                                <small class="form-text text-muted">
+                                    This image appears at the top of your group card on the home and browse pages.
+                                    If left blank, a coloured gradient is used instead.
+                                </small>
+                                {% if form.cover_image.errors %}
+                                <div class="text-danger small mt-1">{{ form.cover_image.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    {{ form.is_private }}
+                                    <label class="form-check-label" for="{{ form.is_private.id_for_label }}">
+                                        <i class="bi bi-lock"></i> Make this group private
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Private groups won't appear in public listings
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Join Password -->
+                            <div class="mb-4">
+                                <label for="{{ form.join_password.id_for_label }}" class="form-label">
+                                    <i class="bi bi-key-fill"></i> Join Password
+                                    <span class="text-muted fw-normal">(optional)</span>
+                                </label>
+                                <div class="input-group">
+                                    {{ form.join_password }}
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleJoinPwd"
+                                            title="Show/hide password">
+                                        <i class="bi bi-eye" id="toggleJoinIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="bi bi-shield-lock"></i>
+                                    Members must enter this password to join. Leave blank for open access.
+                                </small>
+                                {% if form.join_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.join_password.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle"></i> Create Study Group
+                                </button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live preview of uploaded cover image
+document.getElementById('id_cover_image').addEventListener('change', function () {
+    const file = this.files[0];
+    const box  = document.getElementById('previewBox');
+    const lbl  = document.getElementById('fileLabel');
+
+    if (file) {
+        lbl.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = e => {
+            box.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+        };
+        reader.readAsDataURL(file);
+    } else {
+        lbl.textContent = 'Click to upload a cover image (JPG, PNG, GIF…)';
+        box.innerHTML = `<div class="preview-placeholder">
+            <i class="bi bi-image"></i><small>Cover image<br>preview</small>
+        </div>`;
+    }
+});
+
+// Show/hide join password toggle
+document.getElementById('toggleJoinPwd').addEventListener('click', function () {
+    const input = document.getElementById('{{ form.join_password.id_for_label }}');
+    const icon  = document.getElementById('toggleJoinIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+</script>
+{% endblock %}

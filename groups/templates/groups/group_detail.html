@@ -1,0 +1,822 @@
+{% extends 'base.html' %}
+{% block title %}{{ group.name }} – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Group hero */
+.group-hero {
+    position: relative; height: 280px; border-radius: 18px;
+    overflow: hidden; margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+}
+.group-hero-img { width:100%; height:100%; object-fit:cover; display:block; }
+.group-hero-fallback { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.group-hero-fallback i { font-size:6rem; color:rgba(255,255,255,.7); }
+.group-hero-overlay {
+    position:absolute; inset:0;
+    background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.08) 60%, transparent 100%);
+    display:flex; flex-direction:column; justify-content:flex-end;
+    padding:1.6rem 2rem; color:#fff;
+}
+.group-hero-overlay h2 { font-size:2rem; font-weight:800; margin:0; text-shadow:0 2px 8px rgba(0,0,0,.6); }
+.group-hero-overlay .meta { font-size:.88rem; opacity:.9; margin-top:6px; }
+.change-banner-btn {
+    position: absolute; top: 14px; right: 16px;
+    background: rgba(0,0,0,.55); color:#fff; border:2px solid rgba(255,255,255,.4);
+    border-radius: 30px; padding: 6px 16px; font-size:.8rem; font-weight:600;
+    cursor:pointer; backdrop-filter:blur(4px); text-decoration:none; transition: all .2s;
+}
+.change-banner-btn:hover { background:rgba(0,0,0,.8); color:#fff; border-color:#fff; }
+
+/* Chat */
+.chat-container {
+    height: 420px; overflow-y:auto;
+    background: linear-gradient(180deg, #f0f2f8 0%, #e8eaf0 100%);
+    border-radius: 12px; padding: 16px;
+}
+.message-bubble {
+    border-radius: 18px 18px 18px 4px;
+    padding: 10px 14px; margin-bottom: 10px; margin-right: auto;
+    max-width: 72%; background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07); position: relative;
+}
+.message-bubble.own-message {
+    border-radius: 18px 18px 4px 18px;
+    background: linear-gradient(135deg, #3b145b, #6a1fa0);
+    color: #fff; margin-left: auto; margin-right: 0;
+}
+.message-bubble.own-message small { color:rgba(255,255,255,.75) !important; }
+.message-bubble.own-message a { color: #c9f0ff; }
+.msg-sender { font-size:.78rem; font-weight:700; margin-bottom:3px; color:#3b145b; }
+.own-message .msg-sender { color: rgba(255,255,255,.85); }
+.msg-time { font-size:.7rem; }
+.msg-img { max-width:100%; border-radius:10px; margin-top:6px; display:block; max-height:220px; object-fit:cover; }
+.msg-video { max-width:100%; border-radius:10px; margin-top:6px; }
+.msg-audio { width:100%; margin-top:6px; }
+.msg-pdf-link, .msg-file-link {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,0,0,.08); border-radius:8px;
+    padding:8px 12px; margin-top:6px;
+    text-decoration:none; font-size:.85rem; font-weight:600;
+    border:none; cursor:pointer; color:inherit; max-width:100%;
+    word-break:break-all;
+}
+.msg-file-link span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px; }
+.own-message .msg-pdf-link,
+.own-message .msg-file-link { background:rgba(255,255,255,.18); color:#fff; }
+.msg-file-link:hover, .msg-pdf-link:hover { filter:brightness(1.1); }
+
+/* Chat toolbar */
+.chat-toolbar {
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:2px solid #e0e0e0; border-radius:16px;
+    padding: 8px 12px; margin-top:12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    position: relative; overflow: visible;
+}
+.chat-toolbar input[type="text"] { flex:1; border:none; outline:none; font-size:.95rem; background:transparent; }
+.chat-toolbar .attach-btn {
+    background:none; border:none; color:#6a1fa0; font-size:1.25rem;
+    cursor:pointer; transition:transform .2s; padding:0 2px; position: relative;
+}
+.chat-toolbar .attach-btn:hover { transform:scale(1.2); color:#3b145b; }
+.chat-toolbar .send-btn {
+    background: linear-gradient(135deg,#3b145b,#e10707);
+    border:none; border-radius:50%;
+    width:40px; height:40px; color:#fff; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .2s, box-shadow .2s; flex-shrink: 0;
+}
+.chat-toolbar .send-btn:hover { transform:scale(1.1); box-shadow:0 4px 12px rgba(0,0,0,.25); }
+
+/* Media picker */
+.media-picker {
+    display:none; position:absolute; bottom:calc(100% + 8px); left:0; right:0;
+    background:#fff; border-radius:14px; padding:12px;
+    box-shadow:0 8px 28px rgba(0,0,0,.16); z-index:1050;
+}
+.media-picker.show { display:flex; flex-wrap:wrap; gap:8px; }
+.media-pick-btn {
+    flex:1; min-width:80px; border:none;
+    border-radius:10px; padding:10px 8px; text-align:center;
+    font-size:.75rem; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.media-pick-btn i { font-size:1.4rem; display:block; margin-bottom:4px; }
+.mpb-image { background:#fff3e0; color:#e65100; }
+.mpb-video { background:#f3e5f5; color:#6a1fa0; }
+.mpb-audio { background:#e3f2fd; color:#1565c0; }
+.mpb-pdf   { background:#fce4ec; color:#c62828; }
+.mpb-file  { background:#e8f5e9; color:#2e7d32; }
+.media-pick-btn:hover { transform:translateY(-3px); box-shadow:0 4px 12px rgba(0,0,0,.12); }
+.media-preview-area {
+    background: #f8f9fa; border-radius:10px; padding:10px 14px;
+    margin-top:8px; display:none; align-items:center; gap:10px;
+}
+.media-preview-area.show { display:flex; }
+.preview-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+.preview-name { font-size:.82rem; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.preview-clear { background:none; border:none; color:#e10707; font-size:1.1rem; cursor:pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <!-- GROUP HERO CARD -->
+    <div class="group-hero" id="groupHero">
+        {% if group.cover_image %}
+            <img src="{{ group.cover_image.url }}" alt="{{ group.name }}" class="group-hero-img" id="heroImg">
+        {% else %}
+            {% with sl=group.subject|lower %}
+            <div class="group-hero-fallback
+                {% if 'math' in sl %}cover-math
+                {% elif 'phys' in sl or 'chem' in sl or 'bio' in sl or 'science' in sl %}cover-science
+                {% elif 'english' in sl or 'lit' in sl %}cover-english
+                {% elif 'history' in sl or 'geo' in sl or 'social' in sl %}cover-history
+                {% elif 'computer' in sl or 'code' in sl or 'prog' in sl %}cover-cs
+                {% elif 'art' in sl or 'music' in sl or 'design' in sl %}cover-arts
+                {% else %}cover-default{% endif %}" id="heroFallback">
+                <i class="bi
+                    {% if 'math' in sl %}bi-calculator
+                    {% elif 'phys' in sl or 'chem' in sl or 'bio' in sl or 'science' in sl %}bi-eyedropper
+                    {% elif 'english' in sl or 'lit' in sl %}bi-book-half
+                    {% elif 'history' in sl or 'geo' in sl or 'social' in sl %}bi-globe2
+                    {% elif 'computer' in sl or 'code' in sl or 'prog' in sl %}bi-code-slash
+                    {% elif 'art' in sl or 'music' in sl or 'design' in sl %}bi-palette
+                    {% else %}bi-mortarboard{% endif %}"></i>
+            </div>
+            {% endwith %}
+        {% endif %}
+        <div class="group-hero-overlay">
+            <h2>{{ group.name }}</h2>
+            <div class="meta d-flex align-items-center gap-3 flex-wrap">
+                <span><i class="bi bi-tag-fill"></i> {{ group.subject }}</span>
+                <span><i class="bi bi-people-fill"></i> {{ group.members.count }}/{{ group.max_members }} members</span>
+                <span><i class="bi bi-person-fill"></i> Created by {{ group.created_by.username }}</span>
+                {% if group.is_private %}<span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Private</span>{% endif %}
+                {% if group.join_password %}<span class="badge bg-warning text-dark"><i class="bi bi-key-fill"></i> Password Protected</span>{% endif %}
+                {% if is_member %}<span class="badge bg-success"><i class="bi bi-check-circle"></i> Member</span>{% endif %}
+            </div>
+        </div>
+        {% if user == group.created_by %}
+        <label class="change-banner-btn" for="bannerFileInput" title="Change group banner">
+            <i class="bi bi-image-fill"></i> Change Banner
+        </label>
+        <form id="bannerForm" method="post" enctype="multipart/form-data" action="{% url 'group_detail' group.pk %}" style="display:none;">
+            {% csrf_token %}
+            <input type="file" id="bannerFileInput" name="cover_image" accept="image/*" style="display:none;">
+            <input type="hidden" name="update_banner" value="1">
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        {% if not is_member %}
+        <a href="{% url 'join_group' group.pk %}" class="btn btn-primary">
+            {% if group.join_password %}
+            <i class="bi bi-key-fill"></i> Join with Password
+            {% else %}
+            <i class="bi bi-person-plus"></i> Join Group
+            {% endif %}
+        </a>
+        {% else %}
+            {% if user != group.created_by %}
+            <a href="{% url 'leave_group' group.pk %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-left"></i> Leave Group
+            </a>
+            {% endif %}
+        {% endif %}
+        <a href="{% url 'browse_groups' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Browse
+        </a>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-2"><i class="bi bi-info-circle"></i> About this Group</h5>
+            <p class="mb-0">{{ group.description }}</p>
+        </div>
+    </div>
+
+    <!-- TABS (members only) -->
+    {% if is_member %}
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#chat"><i class="bi bi-chat-dots-fill"></i> Chat</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#resources"><i class="bi bi-file-earmark-text"></i> Resources</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#calendar"><i class="bi bi-calendar-event"></i> Calendar</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- CHAT TAB -->
+        <div id="chat" class="tab-pane fade show active">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card" style="overflow:visible;">
+                        <div class="card-header d-flex align-items-center gap-2">
+                            <i class="bi bi-chat-dots-fill"></i> Group Chat
+                            <span class="badge bg-success ms-auto" style="font-size:.7rem;">● Live</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chat-container" id="chatContainer">
+                                {% for msg in messages %}
+                                <div class="message-bubble {% if msg.sender == user %}own-message{% endif %}"
+                                     data-id="{{ msg.pk }}">
+                                    <div class="msg-sender">{{ msg.sender.username }}</div>
+                                    {% if msg.content|slice:':9' == '__MEDIA__' %}
+                                        <div class="msg-media-placeholder">
+                                            <span class="text-muted small">
+                                                <i class="bi bi-hourglass-split"></i> Loading…
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <div class="msg-content">{{ msg.content }}</div>
+                                    {% endif %}
+                                    <small class="text-muted msg-time">{{ msg.sent_at|date:"g:i A" }}</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- File preview bar -->
+                            <div class="media-preview-area" id="mediaPreview">
+                                <img class="preview-thumb" id="previewThumb" src="" alt="" style="display:none;">
+                                <i class="bi bi-file-earmark" id="previewIcon" style="font-size:2rem; display:none;"></i>
+                                <span class="preview-name" id="previewName"></span>
+                                <button class="preview-clear" onclick="clearMedia()"><i class="bi bi-x-circle-fill"></i></button>
+                            </div>
+
+                            <!-- Input toolbar -->
+                            <div class="chat-toolbar" id="chatToolbar">
+                                <!-- Media picker popup -->
+                                <div class="media-picker" id="mediaPicker">
+                                    <button class="media-pick-btn mpb-image" onclick="triggerUpload('image/*','image')">
+                                        <i class="bi bi-image-fill"></i>Image
+                                    </button>
+                                    <button class="media-pick-btn mpb-video" onclick="triggerUpload('video/*','video')">
+                                        <i class="bi bi-camera-video-fill"></i>Video
+                                    </button>
+                                    <button class="media-pick-btn mpb-audio" onclick="triggerUpload('audio/*','audio')">
+                                        <i class="bi bi-mic-fill"></i>Audio
+                                    </button>
+                                    <button class="media-pick-btn mpb-pdf" onclick="triggerUpload('.pdf','pdf')">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i>PDF
+                                    </button>
+                                    <button class="media-pick-btn mpb-file" onclick="triggerUpload('','file')">
+                                        <i class="bi bi-file-earmark-arrow-up-fill"></i>File
+                                    </button>
+                                </div>
+                                <button class="attach-btn" id="attachBtn" type="button"><i class="bi bi-paperclip"></i></button>
+                                <input type="text" id="messageInput" placeholder="Type a message…">
+                                <button class="send-btn" id="sendBtn" type="button"><i class="bi bi-send-fill"></i></button>
+                            </div>
+                            <input type="file" id="hiddenFileInput" style="display:none; position:absolute;">
+                        </div><!-- /.card-body -->
+                    </div>
+                </div>
+
+                <!-- Members sidebar -->
+                <div class="col-lg-4 mt-4 mt-lg-0">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-people-fill"></i> Members ({{ group.members.count }})</div>
+                        <div class="card-body">
+                            {% for member in group.members.all %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="member-avatar me-2">{{ member.username|first|upper }}</div>
+                                <div>
+                                    <strong>{{ member.username }}</strong>
+                                    {% if member == group.created_by %}<span class="badge bg-warning text-dark">Admin</span>{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESOURCES TAB -->
+        <div id="resources" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">Shared Resources</div>
+                        <div class="card-body">
+                            {% for resource in resources %}
+                            {% if not resource.description|slice:':13' == '__CHAT_MEDIA_' %}
+                            <div class="resource-item">
+                                <h5>
+                                    <i class="bi bi-file-earmark"></i> {{ resource.title }}
+                                    <span class="badge bg-secondary">{{ resource.get_resource_type_display }}</span>
+                                </h5>
+                                <p class="mb-1">{{ resource.description }}</p>
+                                {% if resource.file %}<a href="{{ resource.file.url }}" download class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> Download</a>{% endif %}
+                                {% if resource.link %}<a href="{{ resource.link }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-link-45deg"></i> Open Link</a>{% endif %}
+                                <small class="text-muted d-block mt-2">Shared by {{ resource.uploaded_by.username }} on {{ resource.uploaded_at|date:"M d, Y" }}</small>
+                            </div>
+                            {% endif %}
+                            {% empty %}
+                            <p class="text-muted">No resources shared yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4 mt-md-0">
+                    <div class="card">
+                        <div class="card-header">Add Resource</div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'add_resource' group.pk %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ resource_form.as_p }}
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-plus-circle"></i> Add Resource
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CALENDAR TAB -->
+        <div id="calendar" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">Upcoming Study Sessions</div>
+                        <div class="card-body">
+                            {% for session in upcoming_sessions %}
+                            <div class="calendar-event">
+                                <h5><i class="bi bi-calendar-check"></i> {{ session.title }}</h5>
+                                <p class="mb-1">{{ session.description }}</p>
+                                <p><strong>Date &amp; Time:</strong> {{ session.scheduled_time|date:"M d, Y g:i A" }}</p>
+                                <p><strong>Duration:</strong> {{ session.duration_minutes }} minutes</p>
+                                <small class="text-muted">Scheduled by {{ session.created_by.username }}</small>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">No sessions scheduled.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4 mt-md-0">
+                    <div class="card">
+                        <div class="card-header">Schedule Session</div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'add_session' group.pk %}">
+                                {% csrf_token %}
+                                {{ session_form.as_p }}
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-calendar-plus"></i> Schedule
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.tab-content -->
+
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Join this group to access the chat, resources, and session calendar.
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if is_member %}
+
+<!-- ── Media viewer modal ─────────────────────────────────── -->
+<div class="modal fade" id="mediaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-0">
+      <div class="modal-header border-0 pb-0">
+        <span id="mediaModalTitle" class="fw-semibold text-truncate me-2"></span>
+        <button type="button" class="btn-close btn-close-white ms-auto flex-shrink-0"
+                data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-3" id="mediaModalBody"></div>
+      <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+        <a id="mediaModalDownload" href="#" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-download"></i> Download
+        </a>
+        <a id="mediaModalOpen" href="#" target="_blank"
+           class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-box-arrow-up-right"></i> Open in new tab
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(function () {
+
+    /* ── Constants ──────────────────────────────────────────── */
+    const chatBox  = document.getElementById('chatContainer');
+    const $chat    = $('#chatContainer');
+    const $input   = $('#messageInput');
+    const GROUP_PK = {{ group.pk }};
+    const CSRF     = '{{ csrf_token }}';
+    const ME       = '{{ user.username }}';
+
+    let selectedFile = null;
+    let selectedType = null;
+
+    // Seed lastMsgId from highest data-id in DOM
+    let lastMsgId = 0;
+    $chat.find('.message-bubble[data-id]').each(function () {
+        const id = parseInt($(this).data('id')) || 0;
+        if (id > lastMsgId) lastMsgId = id;
+    });
+
+    /* ── Utilities ──────────────────────────────────────────── */
+    function scrollBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
+
+    function esc(str) { return $('<div>').text(str || '').html(); }
+
+    function showAlert(html, type = 'success') {
+        const $el = $(`<div class="alert alert-${type} alert-dismissible fade show"
+            style="position:fixed;top:90px;right:20px;z-index:9999;min-width:280px;max-width:380px;"
+            role="alert">${html}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`);
+        $('body').append($el);
+        setTimeout(() => $el.alert('close'), 4500);
+    }
+
+    /* ── File type helpers ──────────────────────────────────── */
+    // Map type → Bootstrap-icon class
+    const TYPE_ICON = {
+        image : 'bi-image-fill',
+        video : 'bi-camera-video-fill',
+        audio : 'bi-mic-fill',
+        pdf   : 'bi-file-earmark-pdf-fill',
+        file  : 'bi-file-earmark-arrow-down-fill',
+    };
+    // Map type → icon colour
+    const TYPE_COLOR = {
+        image : '#e65100',
+        video : '#6a1fa0',
+        audio : '#1565c0',
+        pdf   : '#c62828',
+        file  : '#2e7d32',
+    };
+
+    function iconFor(type) {
+        return TYPE_ICON[type] || TYPE_ICON.file;
+    }
+
+    /* ── Media viewer modal ─────────────────────────────────── */
+    window.openMedia = function (type, url, name) {
+        let body = '';
+        const safeUrl  = url;
+        const safeName = esc(name);
+
+        if (type === 'image') {
+            body = `<img src="${safeUrl}" class="img-fluid rounded"
+                         style="max-height:78vh;cursor:zoom-in;" alt="${safeName}"
+                         onclick="this.style.maxHeight=this.style.maxHeight?'':'none'">`;
+        } else if (type === 'video') {
+            body = `<video controls class="w-100 rounded" style="max-height:72vh;" preload="metadata">
+                        <source src="${safeUrl}">
+                        <p class="text-light mt-2">Browser cannot play this video —
+                           use the Download button below.</p>
+                    </video>`;
+        } else if (type === 'audio') {
+            body = `<div class="py-4">
+                        <i class="bi bi-music-note-beamed" style="font-size:3rem;color:#90caf9;"></i>
+                        <p class="text-light mt-2 mb-3">${safeName}</p>
+                        <audio controls class="w-100" preload="metadata">
+                            <source src="${safeUrl}">
+                        </audio>
+                    </div>`;
+        } else if (type === 'pdf') {
+            // Try to embed PDF; fallback download link shown too
+            body = `<div style="height:72vh;">
+                        <iframe src="${safeUrl}" width="100%" height="100%"
+                                style="border:none;border-radius:8px;"
+                                title="${safeName}"></iframe>
+                    </div>`;
+        } else {
+            // Generic file — just download
+            body = `<div class="py-5">
+                        <i class="bi ${iconFor(type)}"
+                           style="font-size:4rem;color:${TYPE_COLOR[type]||'#aaa'};"></i>
+                        <p class="text-light mt-3 mb-1 fw-semibold">${safeName}</p>
+                        <p class="text-secondary small">Click Download to save this file.</p>
+                    </div>`;
+        }
+
+        $('#mediaModalTitle').text(name || type);
+        $('#mediaModalBody').html(body);
+        // Force-download via our own URL so browser prompts save-as
+        $('#mediaModalDownload')
+            .attr('href', safeUrl + (safeUrl.includes('?') ? '&' : '?') + 'download=1')
+            .attr('download', name || 'download');
+        $('#mediaModalOpen').attr('href', safeUrl);
+
+        const modal = bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('mediaModal'));
+        modal.show();
+    };
+
+    /* ── Inline media HTML inside a chat bubble ─────────────── */
+    function mediaHtml(type, url, name) {
+        if (!type || !url) return '';
+        const safeUrl  = url;
+        const safeName = esc(name || '');
+        // Attrs for onclick — single-quote-safe
+        const jsUrl  = url.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const jsName = (name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+        if (type === 'image') {
+            return `<img src="${safeUrl}" class="msg-img" alt="image"
+                         style="cursor:zoom-in;"
+                         onclick="openMedia('image','${jsUrl}','${jsName}')">`;
+        }
+        if (type === 'video') {
+            return `<video class="msg-video" controls preload="metadata"
+                           style="max-width:100%;border-radius:10px;margin-top:6px;">
+                        <source src="${safeUrl}">
+                        <a href="${safeUrl}" target="_blank" class="msg-file-link">
+                            <i class="bi bi-camera-video-fill"></i> Open video
+                        </a>
+                    </video>`;
+        }
+        if (type === 'audio') {
+            return `<audio class="msg-audio" controls preload="metadata">
+                        <source src="${safeUrl}">
+                        <a href="${safeUrl}" target="_blank" class="msg-file-link">
+                            <i class="bi bi-mic-fill"></i> Open audio
+                        </a>
+                    </audio>`;
+        }
+        if (type === 'pdf') {
+            return `<button type="button" class="msg-file-link"
+                            onclick="openMedia('pdf','${jsUrl}','${jsName}')">
+                        <i class="bi bi-file-earmark-pdf-fill"
+                           style="font-size:1.4rem;color:#c62828;"></i>
+                        <span>${safeName || 'PDF Document'}</span>
+                        <i class="bi bi-eye-fill ms-1" style="font-size:.8rem;opacity:.7;"
+                           title="View"></i>
+                    </button>
+                    <a href="${safeUrl}" download="${safeName || 'document.pdf'}"
+                       class="msg-file-link mt-1" style="font-size:.75rem;">
+                        <i class="bi bi-download"></i> Download PDF
+                    </a>`;
+        }
+        // Generic file — show download button
+        const color = TYPE_COLOR[type] || '#555';
+        return `<a href="${safeUrl}" download="${safeName || 'file'}"
+                   class="msg-file-link">
+                    <i class="bi ${iconFor(type)}"
+                       style="font-size:1.4rem;color:${color};"></i>
+                    <span>${safeName || 'File'}</span>
+                    <i class="bi bi-download ms-1" style="font-size:.8rem;opacity:.7;"></i>
+                </a>`;
+    }
+
+    /* ── Build a bubble DOM element from a message object ───── */
+    function buildBubble(m) {
+        const own = m.is_own || (m.sender === ME);
+        const $b  = $(`<div class="message-bubble ${own ? 'own-message' : ''}"
+                            data-id="${m.id}"></div>`);
+
+        $b.append(`<div class="msg-sender">${esc(m.sender)}</div>`);
+
+        const mh = mediaHtml(m.media_type, m.media_url, m.media_name);
+        if (mh) $b.append(mh);
+
+        if (m.content) {
+            $b.append(`<div class="msg-content mt-1">${esc(m.content)}</div>`);
+        }
+        $b.append(`<small class="text-muted msg-time">${m.sent_at}</small>`);
+        return $b;
+    }
+
+    /* ── Page-load init: resolve media placeholders & set lastMsgId ── */
+    function initChat() {
+        $.get(`/group/${GROUP_PK}/messages/`, { since: 0 })
+         .done(function (res) {
+            if (!res.messages) return;
+
+            const map = {};
+            res.messages.forEach(m => { map[m.id] = m; });
+
+            $chat.find('.msg-media-placeholder').each(function () {
+                const $ph     = $(this);
+                const $bubble = $ph.closest('.message-bubble');
+                const msgId   = parseInt($bubble.data('id'));
+                const m       = map[msgId];
+
+                if (!m) {
+                    $ph.replaceWith(
+                        '<span class="text-muted small">Media unavailable</span>');
+                    return;
+                }
+
+                const mh = mediaHtml(m.media_type, m.media_url, m.media_name);
+                $ph.replaceWith(
+                    mh || '<span class="text-muted small"><i class="bi bi-file-earmark"></i> No preview</span>');
+
+                if (m.content && !$bubble.find('.msg-content').length) {
+                    $bubble.find('.msg-time').before(
+                        `<div class="msg-content mt-1">${esc(m.content)}</div>`);
+                }
+            });
+
+            if (res.last_id && res.last_id > lastMsgId) lastMsgId = res.last_id;
+        });
+        scrollBottom();
+    }
+    initChat();
+
+    /* ── Poll for new messages every 5 s ────────────────────── */
+    function fetchNew() {
+        $.get(`/group/${GROUP_PK}/messages/`, { since: lastMsgId })
+         .done(function (res) {
+            if (!res.messages || !res.messages.length) return;
+
+            const wasAtBottom =
+                chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 50;
+
+            res.messages.forEach(function (m) {
+                if ($chat.find(`.message-bubble[data-id="${m.id}"]`).length) return;
+                $chat.append(buildBubble(m));
+                if (!m.is_own && m.sender !== ME) {
+                    showAlert(`💬 New message from <strong>${esc(m.sender)}</strong>`, 'info');
+                }
+            });
+
+            if (res.last_id) lastMsgId = res.last_id;
+            if (wasAtBottom) scrollBottom();
+        });
+    }
+    setInterval(fetchNew, 5000);
+
+    /* ── Send message ───────────────────────────────────────── */
+    $('#sendBtn').on('click', sendMessage);
+    $input.on('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    function sendMessage() {
+        const text = $input.val().trim();
+        if (!text && !selectedFile) return;
+
+        // Show upload progress for large files
+        const isLarge = selectedFile && selectedFile.size > 1 * 1024 * 1024;
+        if (isLarge) showAlert('⏳ Uploading file…', 'info');
+
+        const $btn = $('#sendBtn');
+        $btn.prop('disabled', true);
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF);
+        if (text)         fd.append('content',    text);
+        if (selectedFile) {
+            fd.append('media_file', selectedFile);
+            fd.append('media_type', selectedType || 'file');
+        }
+
+        $.ajax({
+            url: `/group/${GROUP_PK}/message/send/`,
+            method: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+                const xhr = new XMLHttpRequest();
+                if (isLarge) {
+                    xhr.upload.onprogress = function (e) {
+                        if (e.lengthComputable) {
+                            const pct = Math.round(e.loaded / e.total * 100);
+                            $btn.html(`<span style="font-size:.65rem;">${pct}%</span>`);
+                        }
+                    };
+                }
+                return xhr;
+            },
+        })
+        .done(function (res) {
+            if (res.success && res.message) {
+                $chat.append(buildBubble(res.message));
+                lastMsgId = res.message.id;
+                $input.val('');
+                clearMedia();
+                scrollBottom();
+            } else {
+                showAlert('❌ Failed to send — ' + (res.error || 'please try again.'), 'danger');
+            }
+        })
+        .fail(function (xhr) {
+            const msg = (xhr.responseJSON && xhr.responseJSON.error)
+                      || ('HTTP ' + xhr.status);
+            showAlert('❌ Send error: ' + msg, 'danger');
+            console.error('Send failed:', xhr.status, xhr.responseText);
+        })
+        .always(function () {
+            $btn.prop('disabled', false)
+                .html('<i class="bi bi-send-fill"></i>');
+            $input.focus();
+        });
+    }
+
+    /* ── Attach / media picker ──────────────────────────────── */
+    $('#attachBtn').on('click', function (e) {
+        e.stopPropagation();
+        $('#mediaPicker').toggleClass('show');
+    });
+    $(document).on('click', function () { $('#mediaPicker').removeClass('show'); });
+    $('#mediaPicker').on('click', function (e) { e.stopPropagation(); });
+
+    // Single persistent file input — never replaced/cloned
+    const fileInput = document.getElementById('hiddenFileInput');
+
+    window.triggerUpload = function (accept, type) {
+        selectedType = type;
+        fileInput.accept = accept || '';   // empty string = no restriction (all files)
+        fileInput.value  = '';             // reset so same file re-triggers change
+        $('#mediaPicker').removeClass('show');
+        // Small timeout needed on some browsers after resetting .value
+        setTimeout(function () { fileInput.click(); }, 10);
+    };
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        selectedFile = file;
+
+        // Client-side MIME detection (server always re-verifies)
+        const mime = file.type || '';
+        if      (mime.startsWith('image/'))  selectedType = 'image';
+        else if (mime.startsWith('video/'))  selectedType = 'video';
+        else if (mime.startsWith('audio/'))  selectedType = 'audio';
+        else if (mime === 'application/pdf'
+              || file.name.toLowerCase().endsWith('.pdf')) selectedType = 'pdf';
+        else                                 selectedType = selectedType || 'file';
+
+        $('#mediaPreview').addClass('show');
+        $('#previewName').text(file.name);
+
+        if (selectedType === 'image') {
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                $('#previewThumb').attr('src', ev.target.result).show();
+                $('#previewIcon').hide();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#previewThumb').hide();
+            $('#previewIcon')
+                .attr('class', 'bi ' + iconFor(selectedType))
+                .css({ 'font-size': '2rem', 'color': TYPE_COLOR[selectedType] || '#555' })
+                .show();
+        }
+    });
+
+    window.clearMedia = function () {
+        selectedFile  = null;
+        selectedType  = null;
+        fileInput.value = '';
+        fileInput.accept = '';
+        $('#mediaPreview').removeClass('show');
+        $('#previewThumb').hide();
+        $('#previewIcon').hide();
+    };
+
+    /* ── Banner change (admin only) ─────────────────────────── */
+    {% if user == group.created_by %}
+    $('#bannerFileInput').on('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const $img = $('#heroImg');
+            if ($img.length) {
+                $img.attr('src', e.target.result);
+            } else {
+                $('#heroFallback').replaceWith(
+                    `<img id="heroImg" class="group-hero-img" src="${e.target.result}" alt="">`);
+            }
+        };
+        reader.readAsDataURL(file);
+        $('#bannerForm').submit();
+    });
+    {% endif %}
+
+});
+</script>
+{% endif %}
+{% endblock %}

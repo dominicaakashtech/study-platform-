@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-hero {
+    background: linear-gradient(135deg, #010101 0%, #1e0239 50%, #3b145b 100%);
+    color: #fff; padding: 40px 0 30px; margin-bottom: 2rem;
+}
+.admin-hero h2 { font-size: 2rem; font-weight: 800; }
+
+.stat-card {
+    border-radius: 18px; padding: 24px 20px; color: #fff;
+    position: relative; overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18); transition: transform .25s; height: 100%;
+}
+.stat-card:hover { transform: translateY(-5px); }
+.stat-card .stat-icon { position: absolute; right: 18px; top: 18px; font-size: 3.5rem; opacity: .18; }
+.stat-card h2 { font-size: 2.8rem; font-weight: 800; margin: 0; }
+.stat-card p  { margin: 4px 0 0; font-size: .9rem; opacity: .88; }
+
+.sc-purple { background: linear-gradient(135deg, #3b145b, #7c3aed); }
+.sc-blue   { background: linear-gradient(135deg, #0d3b6e, #1565c0); }
+.sc-green  { background: linear-gradient(135deg, #145214, #2e7d32); }
+.sc-red    { background: linear-gradient(135deg, #5c0a0a, #c62828); }
+.sc-orange { background: linear-gradient(135deg, #7f3300, #e65100); }
+.sc-teal   { background: linear-gradient(135deg, #00494d, #00838f); }
+.sc-dark   { background: linear-gradient(135deg, #1a1a1a, #444); }
+.sc-indigo { background: linear-gradient(135deg, #1a0066, #4527a0); }
+.sc-pink   { background: linear-gradient(135deg, #7b003b, #c2185b); }
+.sc-brown  { background: linear-gradient(135deg, #4a2000, #8d4c1a); }
+
+/* Table */
+.admin-table th { background: linear-gradient(135deg,#1e0239,#3b145b); color:#fff; border:none; font-weight:600; }
+.admin-table td { vertical-align: middle; }
+.admin-table tbody tr:hover { background: #f8f0ff; }
+
+.section-hdr {
+    border-left: 5px solid #3b145b; padding-left: 14px; margin: 2rem 0 1rem;
+    font-size: 1.2rem; font-weight: 700; color: #1e0239;
+}
+.action-btns .btn { border-radius: 20px; font-size: .78rem; padding: 4px 12px; }
+
+/* Password card */
+.pwd-card {
+    background: linear-gradient(135deg, #0d0d2b, #1e0239);
+    border-radius: 18px; padding: 28px 24px; color: #fff;
+    box-shadow: 0 8px 28px rgba(0,0,0,.3);
+}
+.pwd-toggle { cursor: pointer; color: #7c3aed; }
+
+/* Announcement card */
+.ann-card {
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    border-left: 5px solid;
+}
+.ann-info    { background: #e8f4fd; border-color: #1565c0; }
+.ann-warning { background: #fff8e1; border-color: #f57f17; }
+.ann-danger  { background: #fce4ec; border-color: #c62828; }
+
+/* Tabs */
+.admin-nav-tabs .nav-link { font-weight: 600; color: #3b145b; }
+.admin-nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #1e0239, #3b145b);
+    color: #fff; border-color: transparent; border-radius: 10px 10px 0 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ADMIN HERO -->
+<div class="admin-hero">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div>
+                <h2><i class="bi bi-shield-lock-fill"></i> Admin Dashboard</h2>
+                <p class="mb-0 opacity-75">Full control over LEARN HUB platform</p>
+            </div>
+            <div class="ms-auto d-flex gap-2 flex-wrap">
+                <span class="badge bg-warning text-dark fs-6"><i class="bi bi-person-fill"></i> {{ request.user.username }}</span>
+                <span class="badge bg-success fs-6"><i class="bi bi-circle-fill" style="font-size:.5rem;"></i> Online</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- STAT CARDS ROW 1 -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-purple">
+                <i class="bi bi-people-fill stat-icon"></i>
+                <h2>{{ total_users }}</h2><p>Total Users</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-blue">
+                <i class="bi bi-collection-fill stat-icon"></i>
+                <h2>{{ total_groups }}</h2><p>Study Groups</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-green">
+                <i class="bi bi-chat-dots-fill stat-icon"></i>
+                <h2>{{ total_messages }}</h2><p>Messages</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-red">
+                <i class="bi bi-file-earmark-text-fill stat-icon"></i>
+                <h2>{{ total_resources }}</h2><p>Resources</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-orange">
+                <i class="bi bi-calendar-check-fill stat-icon"></i>
+                <h2>{{ total_sessions }}</h2><p>Sessions</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card sc-teal">
+                <i class="bi bi-lock-fill stat-icon"></i>
+                <h2>{{ private_groups }}</h2><p>Private Groups</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS ROW 2 -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card sc-teal" style="background:linear-gradient(135deg,#003d3d,#006464);">
+                <i class="bi bi-patch-check-fill stat-icon"></i>
+                <h2>{{ verified_users }}</h2><p>Verified Users</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card sc-red" style="background:linear-gradient(135deg,#400000,#a00000);">
+                <i class="bi bi-slash-circle-fill stat-icon"></i>
+                <h2>{{ banned_users }}</h2><p>Banned Users</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN TABS -->
+    <ul class="nav nav-tabs admin-nav-tabs mb-4" id="adminTabs">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-users"><i class="bi bi-people-fill"></i> Users</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-groups"><i class="bi bi-collection-fill"></i> Groups</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-messages"><i class="bi bi-chat-dots-fill"></i> Messages</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-announcements"><i class="bi bi-megaphone-fill"></i> Announcements</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-settings"><i class="bi bi-gear-fill"></i> Settings</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ── USERS TAB ─────────────────────────────────────────────────── -->
+        <div class="tab-pane fade show active" id="tab-users">
+            <!-- Search bar -->
+            <div class="mb-3">
+                <input type="text" id="userSearch" class="form-control" placeholder="🔍 Search users by name or email…">
+            </div>
+            <div class="card" style="height:auto;">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table admin-table mb-0" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Joined</th>
+                                    <th>Groups</th>
+                                    <th>Verified</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in all_users %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="member-avatar" style="width:32px;height:32px;font-size:.8rem;">{{ u.username|first|upper }}</div>
+                                            <strong>{{ u.username }}</strong>
+                                        </div>
+                                    </td>
+                                    <td><small class="text-muted">{{ u.email|default:"—" }}</small></td>
+                                    <td><small>{{ u.date_joined|date:"M d, Y" }}</small></td>
+                                    <td><span class="badge bg-info">{{ u.joined_groups.count }}</span></td>
+                                    <td>
+                                        {% if u.profile.email_verified %}
+                                        <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.is_superuser %}<span class="badge bg-danger">Superuser</span>
+                                        {% elif u.is_staff %}<span class="badge bg-warning text-dark">Staff</span>
+                                        {% else %}<span class="badge bg-secondary">User</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.is_active %}<span class="badge bg-success">Active</span>
+                                        {% else %}<span class="badge bg-danger">Banned</span>{% endif %}
+                                    </td>
+                                    <td class="action-btns">
+                                        <a href="/admin/auth/user/{{ u.pk }}/change/" class="btn btn-outline-primary btn-sm" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        {% if not u.is_superuser and u != request.user %}
+                                        <form method="post" action="{% url 'admin_toggle_user' u.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            {% if u.is_active %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Ban user"
+                                                onclick="return confirm('Ban {{ u.username }}?')">
+                                                <i class="bi bi-slash-circle"></i>
+                                            </button>
+                                            {% else %}
+                                            <button type="submit" class="btn btn-outline-success btn-sm" title="Unban user">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            {% endif %}
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="9" class="text-center text-muted py-4">No users found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── GROUPS TAB ────────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-groups">
+            <div class="mb-3">
+                <input type="text" id="groupSearch" class="form-control" placeholder="🔍 Search groups…">
+            </div>
+            <div class="card" style="height:auto;">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table admin-table mb-0" id="groupsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Group</th>
+                                    <th>Subject</th>
+                                    <th>Creator</th>
+                                    <th>Members</th>
+                                    <th>Messages</th>
+                                    <th>Type</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for g in all_groups %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ g.name }}</strong></td>
+                                    <td><span class="badge bg-light text-dark border">{{ g.subject }}</span></td>
+                                    <td>{{ g.created_by.username }}</td>
+                                    <td><span class="badge bg-info">{{ g.members.count }}/{{ g.max_members }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ g.messages.count }}</span></td>
+                                    <td>
+                                        {% if g.is_private %}<span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Private</span>
+                                        {% else %}<span class="badge bg-success"><i class="bi bi-globe"></i> Public</span>{% endif %}
+                                    </td>
+                                    <td><small>{{ g.created_at|date:"M d, Y" }}</small></td>
+                                    <td class="action-btns">
+                                        <a href="{% url 'group_detail' g.pk %}" class="btn btn-outline-secondary btn-sm" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <form method="post" action="{% url 'admin_delete_group' g.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete group"
+                                                onclick="return confirm('Permanently delete group {{ g.name }}?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="9" class="text-center text-muted py-4">No groups found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── MESSAGES TAB ──────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-messages">
+            <div class="card" style="height:auto;">
+                <div class="card-body">
+                    {% for msg in recent_messages %}
+                    <div class="d-flex gap-2 mb-3 pb-3 border-bottom align-items-start">
+                        <div class="member-avatar flex-shrink-0" style="width:38px;height:38px;font-size:.85rem;">{{ msg.sender.username|first|upper }}</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold small">
+                                {{ msg.sender.username }}
+                                <span class="text-muted fw-normal">in <em>{{ msg.study_group.name }}</em></span>
+                                <span class="text-muted ms-1" style="font-size:.7rem;">{{ msg.sent_at|date:"M d, g:i A" }}</span>
+                            </div>
+                            <div class="small text-muted mt-1">{{ msg.content|truncatechars:120 }}</div>
+                        </div>
+                        <form method="post" action="{% url 'admin_delete_message' msg.pk %}" class="flex-shrink-0">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger btn-sm" title="Delete message"
+                                onclick="return confirm('Delete this message?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No messages yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ANNOUNCEMENTS TAB ─────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-announcements">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-megaphone-fill"></i> Platform Announcements</h5>
+                    {% for ann in announcements %}
+                    <div class="ann-card ann-{{ ann.priority }}">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <strong>{{ ann.title }}</strong>
+                                <span class="badge bg-{{ ann.priority }} ms-2">{{ ann.get_priority_display }}</span>
+                                {% if not ann.is_active %}<span class="badge bg-secondary ms-1">Inactive</span>{% endif %}
+                                <p class="mb-1 mt-1 small">{{ ann.content }}</p>
+                                <small class="text-muted">By {{ ann.created_by.username }} · {{ ann.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <form method="post" action="{% url 'admin_delete_announcement' ann.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="return confirm('Delete?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No announcements yet.</p>
+                    {% endfor %}
+                </div>
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-plus-circle-fill"></i> New Announcement</div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'admin_create_announcement' %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Title</label>
+                                    {{ ann_form.title }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Content</label>
+                                    {{ ann_form.content }}
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Priority</label>
+                                    {{ ann_form.priority }}
+                                </div>
+                                <div class="mb-3 form-check">
+                                    {{ ann_form.is_active }}
+                                    <label class="form-check-label">Active (visible to users)</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-megaphone"></i> Publish Announcement
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SETTINGS TAB ──────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-settings">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <!-- Change Admin Password -->
+                    <div class="pwd-card">
+                        <h5 class="mb-3 fw-bold"><i class="bi bi-key-fill"></i> Change Admin Password</h5>
+                        {% if pwd_success %}
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle-fill"></i> Password updated!
+                            <button class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                        {% if pwd_error %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="bi bi-exclamation-triangle-fill"></i> {{ pwd_error }}
+                            <button class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'admin_dashboard' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="change_password">
+                            <div class="mb-3">
+                                <label class="form-label text-white-50 small fw-semibold">Current Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="current_password" id="curPwd" class="form-control" required>
+                                    <span class="input-group-text pwd-toggle" onclick="togglePwd('curPwd')"><i class="bi bi-eye"></i></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-white-50 small fw-semibold">New Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="new_password" id="newPwd" class="form-control" required minlength="8">
+                                    <span class="input-group-text pwd-toggle" onclick="togglePwd('newPwd')"><i class="bi bi-eye"></i></span>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label text-white-50 small fw-semibold">Confirm New Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="confirm_password" id="conPwd" class="form-control" required>
+                                    <span class="input-group-text pwd-toggle" onclick="togglePwd('conPwd')"><i class="bi bi-eye"></i></span>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-shield-lock"></i> Update Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Quick Actions -->
+                    <h5 class="section-hdr"><i class="bi bi-lightning-charge-fill"></i> Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/" class="btn btn-outline-dark">
+                            <i class="bi bi-gear-fill"></i> Django Admin Panel
+                        </a>
+                        <a href="{% url 'create_group' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Create Study Group
+                        </a>
+                        <a href="{% url 'browse_groups' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-grid-3x3-gap"></i> Browse Groups
+                        </a>
+                    </div>
+
+                    <!-- Platform Stats Summary -->
+                    <h5 class="section-hdr mt-4"><i class="bi bi-bar-chart-fill"></i> Platform Health</h5>
+                    <div class="card" style="height:auto;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-muted">Active Users</span>
+                                <strong>{{ total_users|add:"-"|add:banned_users }}</strong>
+                            </div>
+                            <div class="progress mb-3" style="height:6px;">
+                                <div class="progress-bar bg-success" style="width:{{ verified_users|floatformat:0 }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-muted">Email Verified</span>
+                                <strong>{{ verified_users }}</strong>
+                            </div>
+                            <div class="progress mb-3" style="height:6px;">
+                                <div class="progress-bar bg-info" style="width:60%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-muted">Public Groups</span>
+                                <strong>{{ total_groups|add:"-"|add:private_groups }}</strong>
+                            </div>
+                            <div class="progress" style="height:6px;">
+                                <div class="progress-bar bg-primary" style="width:75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.tab-content -->
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd(id) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === "password" ? "text" : "password";
+}
+
+// Live search for users table
+document.getElementById('userSearch').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+
+// Live search for groups table
+document.getElementById('groupSearch').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#groupsTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+
+// Restore active tab from hash
+const hash = window.location.hash;
+if (hash) {
+    const tab = document.querySelector(`[href="${hash}"]`);
+    if (tab) new bootstrap.Tab(tab).show();
+}
+document.querySelectorAll('#adminTabs .nav-link').forEach(link => {
+    link.addEventListener('shown.bs.tab', () => {
+        history.replaceState(null, '', link.getAttribute('href'));
+    });
+});
+
+// Auto-dismiss messages
+setTimeout(() => {
+    document.querySelectorAll('.alert-dismissible').forEach(el => {
+        const bs = bootstrap.Alert.getOrCreateInstance(el);
+        if (bs) bs.close();
+    });
+}, 5000);
+</script>
+{% endblock %}

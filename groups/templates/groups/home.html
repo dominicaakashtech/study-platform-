@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% block title %}LEARN HUB – Home{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Carousel slides */
+.hero-carousel .carousel-item { height: 520px; position: relative; }
+.slide-bg-1 { background: linear-gradient(135deg, #0d0d2b 0%, #1a0533 40%, #370d61 100%); }
+.slide-bg-2 { background: linear-gradient(135deg, #0a1628 0%, #0d3b6e 50%, #1565c0 100%); }
+.slide-bg-3 { background: linear-gradient(135deg, #0d1f0a 0%, #145214 50%, #2e7d32 100%); }
+.slide-bg-4 { background: linear-gradient(135deg, #1a0000 0%, #5c0a0a 50%, #b71c1c 100%); }
+
+/* Floating particle dots */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: .18;
+    animation: float 6s infinite ease-in-out;
+}
+@keyframes float {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-30px) scale(1.1); }
+}
+
+.carousel-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; color: #fff; padding: 2rem;
+}
+.carousel-overlay .slide-icon { font-size: 4.5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,.4)); }
+.carousel-overlay h1 { font-size: 2.8rem; font-weight: 800; text-shadow: 0 3px 12px rgba(0,0,0,.6); margin-bottom: .6rem; }
+.carousel-overlay p  { font-size: 1.1rem; opacity: .9; margin-bottom: 1.6rem; max-width: 560px; }
+.carousel-overlay .btn { border-radius: 50px; padding: 10px 28px; font-weight: 600; font-size: .95rem; }
+
+.carousel-indicators button {
+    width: 10px; height: 10px; border-radius: 50%;
+    background-color: rgba(255,255,255,.6);
+    border: none; margin: 0 4px;
+}
+.carousel-indicators button.active { background-color: #fff; transform: scale(1.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ─── HERO CAROUSEL ─── -->
+<div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel" data-bs-interval="5000">
+
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
+    </div>
+
+    <div class="carousel-inner">
+
+        <!-- Slide 1 – Welcome -->
+        <div class="carousel-item active slide-bg-1">
+            <!-- decorative particles -->
+            <div class="particle" style="width:180px;height:180px;background:#9c27b0;top:-40px;left:-60px;animation-delay:0s;"></div>
+            <div class="particle" style="width:100px;height:100px;background:#fff;bottom:20px;right:80px;animation-delay:1.5s;"></div>
+            <div class="carousel-overlay">
+                <div>
+                    <div class="slide-icon"><i class="bi bi-people-fill"></i></div>
+                    <h1>Welcome to LEARN HUB</h1>
+                    <p>Connect with peers, share resources, and achieve academic excellence together.</p>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn btn-light me-2">
+                        <i class="bi bi-person-plus"></i> Get Started Free
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'browse_groups' %}" class="btn btn-outline-light">
+                        <i class="bi bi-grid-3x3-gap"></i> Browse Groups
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 – Real-time Chat -->
+        <div class="carousel-item slide-bg-2">
+            <div class="particle" style="width:220px;height:220px;background:#1565c0;top:-60px;right:-50px;animation-delay:.8s;"></div>
+            <div class="particle" style="width:80px;height:80px;background:#fff;bottom:40px;left:60px;animation-delay:2s;"></div>
+            <div class="carousel-overlay">
+                <div>
+                    <div class="slide-icon"><i class="bi bi-chat-dots-fill"></i></div>
+                    <h1>Real-Time Group Chat</h1>
+                    <p>Send text, images, audio, video, and PDF files instantly to your study group.</p>
+                    <a href="{% url 'browse_groups' %}" class="btn btn-light me-2">
+                        <i class="bi bi-arrow-right-circle"></i> Find a Group
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 – Resources -->
+        <div class="carousel-item slide-bg-3">
+            <div class="particle" style="width:150px;height:150px;background:#2e7d32;top:30px;left:-40px;animation-delay:.4s;"></div>
+            <div class="particle" style="width:120px;height:120px;background:#fff;bottom:-20px;right:100px;animation-delay:2.5s;"></div>
+            <div class="carousel-overlay">
+                <div>
+                    <div class="slide-icon"><i class="bi bi-file-earmark-richtext-fill"></i></div>
+                    <h1>Share Study Resources</h1>
+                    <p>Upload documents, links, and notes so your whole group can access them anytime.</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'create_group' %}" class="btn btn-light me-2">
+                        <i class="bi bi-plus-circle"></i> Create a Group
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-light me-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4 – Sessions -->
+        <div class="carousel-item slide-bg-4">
+            <div class="particle" style="width:200px;height:200px;background:#b71c1c;top:-50px;right:20px;animation-delay:1s;"></div>
+            <div class="particle" style="width:90px;height:90px;background:#fff;bottom:30px;left:30px;animation-delay:3s;"></div>
+            <div class="carousel-overlay">
+                <div>
+                    <div class="slide-icon"><i class="bi bi-calendar-check-fill"></i></div>
+                    <h1>Schedule Study Sessions</h1>
+                    <p>Plan and organize virtual or in-person study sessions with your group calendar.</p>
+                    <a href="{% url 'browse_groups' %}" class="btn btn-light me-2">
+                        <i class="bi bi-calendar-plus"></i> Start Scheduling
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- ─── STATS ─── -->
+<div class="container my-5">
+    <div class="row mb-5 g-3">
+        <div class="col-6 col-md-3">
+            <div class="stats-box">
+                <h3><i class="bi bi-people"></i></h3>
+                <p class="mb-0">Join Study Groups</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-box">
+                <h3><i class="bi bi-chat-dots"></i></h3>
+                <p class="mb-0">Real-time Chat</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-box">
+                <h3><i class="bi bi-file-earmark-text"></i></h3>
+                <p class="mb-0">Share Resources</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-box">
+                <h3><i class="bi bi-calendar-event"></i></h3>
+                <p class="mb-0">Schedule Sessions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURED GROUPS -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="bi bi-stars"></i> Featured Study Groups</h2>
+        <a href="{% url 'browse_groups' %}" class="btn btn-outline-secondary btn-sm">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for group in featured_groups %}
+        <div class="col-sm-6 col-lg-4">
+            <div class="group-card card">
+                {% if group.cover_image %}
+                    <img src="{{ group.cover_image.url }}" alt="{{ group.name }} cover" class="group-card-cover">
+                {% else %}
+                    {% with sl=group.subject|lower %}
+                    <div class="group-card-cover-fallback
+                        {% if 'math' in sl %}cover-math
+                        {% elif 'phys' in sl or 'chem' in sl or 'bio' in sl or 'science' in sl %}cover-science
+                        {% elif 'english' in sl or 'lit' in sl %}cover-english
+                        {% elif 'history' in sl or 'geo' in sl or 'social' in sl %}cover-history
+                        {% elif 'computer' in sl or 'code' in sl or 'prog' in sl %}cover-cs
+                        {% elif 'art' in sl or 'music' in sl or 'design' in sl %}cover-arts
+                        {% else %}cover-default{% endif %}">
+                        <i class="bi
+                            {% if 'math' in sl %}bi-calculator
+                            {% elif 'phys' in sl or 'chem' in sl or 'bio' in sl or 'science' in sl %}bi-eyedropper
+                            {% elif 'english' in sl or 'lit' in sl %}bi-book-half
+                            {% elif 'history' in sl or 'geo' in sl or 'social' in sl %}bi-globe2
+                            {% elif 'computer' in sl or 'code' in sl or 'prog' in sl %}bi-code-slash
+                            {% elif 'art' in sl or 'music' in sl or 'design' in sl %}bi-palette
+                            {% else %}bi-mortarboard{% endif %}
+                            cover-icon"></i>
+                        <span class="cover-subject-label">{{ group.subject }}</span>
+                    </div>
+                    {% endwith %}
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title fw-bold mb-1">{{ group.name }}</h5>
+                    <p class="text-muted small mb-1"><i class="bi bi-tag-fill"></i> {{ group.subject }}</p>
+                    <p class="card-text text-muted small">{{ group.description|truncatewords:18 }}</p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-people-fill"></i>
+                        {{ group.member_count }} member{{ group.member_count|pluralize }}
+                    </small>
+                    <a href="{% url 'group_detail' group.pk %}" class="btn btn-primary btn-sm">
+                        View <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-people display-1 text-muted"></i>
+            <p class="text-muted mt-3 fs-5">No groups yet.</p>
+            <a href="{% url 'create_group' %}" class="btn btn-primary mt-1">
+                <i class="bi bi-plus-circle"></i> Create the First Group
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

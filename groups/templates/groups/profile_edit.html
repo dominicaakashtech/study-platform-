@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+.edit-header {
+    background: linear-gradient(135deg, #010101 0%, #3b145b 100%);
+    color: #fff; padding: 2.5rem 0; text-align: center;
+}
+.section-divider {
+    display: flex; align-items: center; gap: 12px;
+    color: #3b145b; font-weight: 700; font-size: .9rem;
+    margin: 1.5rem 0 1rem;
+}
+.section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e0e0e0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-header">
+    <h3><i class="bi bi-person-gear"></i> Edit Your Profile</h3>
+    <p class="opacity-75 mb-0">Update your personal information and settings</p>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            {% if messages %}
+            {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }} alert-dismissible fade show">
+                {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="section-divider"><i class="bi bi-person-fill"></i> Account Information</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                {{ u_form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                {{ u_form.last_name }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                {{ u_form.email }}
+                            </div>
+                        </div>
+
+                        <div class="section-divider"><i class="bi bi-image"></i> Profile Picture</div>
+                        <div class="mb-3">
+                            {{ p_form.avatar }}
+                            <small class="text-muted">JPG, PNG or GIF. Max 5 MB.</small>
+                        </div>
+
+                        <div class="section-divider"><i class="bi bi-file-text"></i> About You</div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Bio</label>
+                            {{ p_form.bio }}
+                        </div>
+
+                        <div class="section-divider"><i class="bi bi-info-circle"></i> Details</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                {{ p_form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Location</label>
+                                {{ p_form.location }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Website</label>
+                                {{ p_form.website }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Date of Birth</label>
+                                {{ p_form.date_of_birth }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Study Interests</label>
+                                {{ p_form.study_interests }}
+                                <small class="text-muted">Separate interests with commas</small>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle-fill"></i> Save Changes
+                            </button>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ other.username }} – LEARN HUB{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-hero {
+    background: linear-gradient(135deg,#010101 0%,#3b145b 100%);
+    padding:1rem 0; color:#fff;
+}
+.dm-wrap {
+    height: 460px; overflow-y: auto;
+    background: linear-gradient(180deg,#f0f2f8,#e8eaf0);
+    border-radius: 12px; padding: 16px;
+}
+.dm-bubble {
+    max-width: 68%; border-radius: 18px;
+    padding: 10px 16px; margin-bottom: 10px;
+    font-size: .93rem; word-break: break-word;
+}
+.dm-bubble.mine {
+    background: linear-gradient(135deg,#3b145b,#6a1fa0);
+    color: #fff; margin-left: auto; border-radius: 18px 18px 4px 18px;
+}
+.dm-bubble.mine small { color: rgba(255,255,255,.65); }
+.dm-bubble.theirs {
+    background: #fff; border: 1px solid #e8e0f0;
+    margin-right: auto; border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.dm-bubble small { display:block; font-size:.7rem; margin-top:4px; }
+.dm-send-bar {
+    background:#fff; border:2px solid #e0e0e0; border-radius:16px;
+    padding:8px 12px; display:flex; align-items:flex-end; gap:10px;
+    margin-top:12px; box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.dm-send-bar textarea {
+    flex:1; border:none; outline:none; resize:none;
+    font-size:.95rem; background:transparent; max-height:120px;
+    padding-top:4px;
+}
+.dm-send-btn {
+    background:linear-gradient(135deg,#3b145b,#e10707);
+    border:none; border-radius:50%; width:42px; height:42px;
+    color:#fff; font-size:1rem; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:transform .2s;
+}
+.dm-send-btn:hover { transform:scale(1.1); }
+.other-avatar {
+    width:40px; height:40px; border-radius:50%;
+    background:linear-gradient(135deg,#3b145b,#7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; overflow:hidden; flex-shrink:0;
+}
+.other-avatar img { width:100%; height:100%; object-fit:cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="chat-hero">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'dm_inbox' %}" class="btn btn-sm btn-outline-light">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="other-avatar">
+                {% if other_profile.avatar %}
+                <img src="{{ other_profile.avatar.url }}" alt="">
+                {% else %}
+                {{ other.username|slice:":2"|upper }}
+                {% endif %}
+            </div>
+            <div>
+                <div class="fw-bold">{{ other.get_full_name|default:other.username }}</div>
+                <small class="opacity-75">@{{ other.username }}</small>
+            </div>
+            <a href="{% url 'public_profile' other.username %}"
+               class="btn btn-sm btn-outline-light ms-auto">
+                <i class="bi bi-person-fill"></i> Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <!-- Messages -->
+            <div class="dm-wrap" id="dmWrap">
+                {% for msg in conversation %}
+                <div class="dm-bubble {% if msg.sender == request.user %}mine{% else %}theirs{% endif %}"
+                     data-id="{{ msg.pk }}">
+                    {{ msg.content }}
+                    <small>{{ msg.sent_at|date:"M d, H:i" }}</small>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-chat-heart display-4"></i>
+                    <p class="mt-2">Say hello to {{ other.get_full_name|default:other.username }}!</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Send bar -->
+            <div class="dm-send-bar" id="dmSendBar">
+                <textarea id="dmInput" rows="1"
+                    placeholder="Message {{ other.get_full_name|default:other.username }}…"
+                    autocomplete="off"></textarea>
+                <button class="dm-send-btn" id="dmSendBtn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+            <small class="text-muted d-block text-center mt-2">
+                Press <kbd>Ctrl+Enter</kbd> to send
+            </small>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const wrap      = document.getElementById('dmWrap');
+const input     = document.getElementById('dmInput');
+const sendBtn   = document.getElementById('dmSendBtn');
+const csrfToken = '{{ csrf_token }}';
+const sendUrl   = '{% url "dm_send" other.username %}';
+const getUrl    = '/messages/{{ other.username }}/fetch/';
+let   lastId    = parseInt('{{ conversation.last.pk|default:0 }}') || 0;
+
+// Scroll to bottom
+wrap.scrollTop = wrap.scrollHeight;
+
+// Auto-resize textarea
+input.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Send message
+function sendMessage() {
+    const content = input.value.trim();
+    if (!content) return;
+
+    // Optimistic render
+    const bubble = document.createElement('div');
+    bubble.className = 'dm-bubble mine';
+    bubble.innerHTML = content.replace(/\n/g,'<br>') +
+        '<small>' + new Date().toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) + '</small>';
+    // remove empty placeholder
+    const empty = wrap.querySelector('.text-center');
+    if (empty) empty.remove();
+    wrap.appendChild(bubble);
+    wrap.scrollTop = wrap.scrollHeight;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    fetch(sendUrl, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'content=' + encodeURIComponent(content),
+    }).catch(console.error);
+}
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Poll for new messages every 4 seconds
+function pollMessages() {
+    fetch(`${getUrl}?since=${lastId}`, {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.messages && data.messages.length) {
+            const atBottom = wrap.scrollHeight - wrap.scrollTop <= wrap.clientHeight + 40;
+            data.messages.forEach(msg => {
+                if (msg.id > lastId) {
+                    lastId = msg.id;
+                    const b = document.createElement('div');
+                    b.className = 'dm-bubble theirs';
+                    b.dataset.id = msg.id;
+                    b.innerHTML = msg.content.replace(/\n/g,'<br>') +
+                        '<small>' + msg.sent_at + '</small>';
+                    wrap.appendChild(b);
+                }
+            });
+            if (atBottom) wrap.scrollTop = wrap.scrollHeight;
+        }
+    }).catch(() => {});
+}
+setInterval(pollMessages, 4000);
+</script>
+{% endblock %}
